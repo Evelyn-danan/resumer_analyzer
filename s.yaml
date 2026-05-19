@@ -1,0 +1,43 @@
+edition: 3.0.0
+name: resume-app
+access: "default"
+
+vars:
+  region: "cn-hangzhou"
+
+resources:
+  hello_world:
+    component: fc3 
+    props:
+      region: ${vars.region}               
+      functionName: "start-python-tqvq"
+      description: 'hello world by serverless devs'
+      runtime: "python3.10"
+      code: ./backend
+      handler: main.handler
+      memorySize: 512 # 建议调大内存，解析简历或连接数据库较占资源
+      timeout: 60
+      
+      # --- 关键配置：网络访问 ---
+      vpcConfig:
+        vpcId: vpc-bp1dijopecrk3atlfpkjt          # 替换为你的 VPC ID
+        securityGroupId: sg-bp1ekddsyu7natp2q0lb  # 替换为你的安全组 ID
+        vSwitchIds:
+          - vsw-bp19c45oxzr7b10n6mtgd            # 替换为 Tair 实例所在可用区的交换机 ID
+
+      # --- 关键配置：环境变量 ---
+      environmentVariables:
+        REDIS_HOST: "r-bp1kdwoxxj0hev0e7x.redis.rds.aliyuncs.com" # Tair 内网连接地址
+        REDIS_PORT: "6379"
+        REDIS_PASSWORD: "415419Bd@" # 建议使用强密码
+
+      triggers:
+        - triggerName: httpTrigger
+          triggerType: http
+          qualifier: LATEST
+          triggerConfig:
+            authType: anonymous
+            disableURLInternet: false
+            methods:
+              - GET
+              - POST
